@@ -78,7 +78,7 @@ Kickstart Guide:
 
 If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
 
-I hope you enjoy your Neovim journey,
+r hope you enjoy your Neovim journey,
 - TJ
 
 P.S. You can delete this when you're done too. It's your config now! :)
@@ -87,11 +87,16 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+
+vim.keymap.set('n', '<leader>rr', ":lua dofile(vim.fn.stdpath('config') .. '/init.lua')<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_hl(0, 'Comment', { fg = '#A9A9A9' }) -- Lighter gray color
+vim.api.nvim_set_hl(0, 'Comment', { fg = '#D3D3D3' }) -- Lighter gray color
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -102,7 +107,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -198,7 +203,8 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
+vim.keymap.set('i', '<C-n>', '<Esc><C-n>i', { noremap = true, silent = true })
+vim.keymap.set('i', '<C-n>', '<Esc><C-n>i', { noremap = true, silent = true })
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
@@ -281,6 +287,122 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+    },
+  },
+  {
+    'folke/flash.nvim',
+    event = 'VeryLazy',
+    ---@type Flash.Config
+    opts = {},
+  -- stylua: ignore
+  keys = {
+    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+    { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+    { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+  },
+  },
+  {
+    'nvim-neorg/neorg',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- Required dependency
+      'nvim-treesitter/nvim-treesitter', -- Required for .norg file parsing
+    },
+    config = function()
+      require('neorg').setup {
+        load = {
+          ['core.defaults'] = {}, -- Load default Neorg modules
+          ['core.concealer'] = {}, -- Enable pretty icons for notes
+          ['core.dirman'] = { -- Manage workspaces
+            config = {
+              workspaces = {
+                notes = '~/notes', -- Default workspace for .norg files
+              },
+            },
+          },
+        },
+      }
+    end,
+    run = ':Neorg sync-parsers', -- Sync Neorg parsers after installation
+  },
+  {
+    'chentoast/marks.nvim',
+    event = 'VeryLazy', -- Optional: Load plugin lazily
+    config = function()
+      require('marks').setup {
+        -- Optional configuration
+        default_mappings = true, -- Use default keymaps
+        signs = true, -- Show signs in the sign column
+        sign_priority = 10, -- Priority of mark signs
+        mappings = {
+          set = 'm', -- Set mark (e.g., `ma`)
+          delete = 'dm', -- Delete mark (e.g., `dma`)
+          next = ']m', -- Jump to next mark
+          prev = '[m', -- Jump to previous mark
+        },
+      }
+    end,
+  },
+  { 'echasnovski/mini.nvim', version = false },
+  {
+    'ray-x/telescope-ast-grep.nvim',
+    dependencies = {
+      { 'nvim-lua/plenary.nvim' },
+      { 'nvim-telescope/telescope.nvim' },
+    },
+  },
+  {
+    'MagicDuck/grug-far.nvim',
+    -- Note (lazy loading): grug-far.lua defers all it's requires so it's lazy by default
+    -- additional lazy config to defer loading is not really needed...
+    config = function()
+      -- optional setup call to override plugin options
+      -- alternatively you can set options with vim.g.grug_far = { ... }
+      require('grug-far').setup {
+        -- options, see Configuration section below
+        -- there are no required options atm
+      }
+    end,
+  },
+  {
+    'stevearc/oil.nvim',
+    dependancies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local oil = require 'oil'
+      oil.setup {
+        colums = { 'icon' },
+        view_options = {
+          show_hidden = true,
+        },
+        keymaps = {
+          -- Custom keybindings for Oil
+          ['<leader>?'] = { 'actions.show_help', mode = 'n' }, --
+          ['<leader>e'] = 'actions.close', -- Close Oil
+          ['<C-p>'] = 'actions.preview', -- Preview file
+          ['<leader>r'] = 'actions.refresh', -- Refresh Oil buffer
+          ['<C-t>'] = 'actions.open_terminal', -- Open terminal at file/dir
+          ['<C-y>'] = 'actions.yank_entry', -- Copy file path
+        },
+        use_default_keymaps = true, -- Keep Oil's default keymaps
+      }
+      vim.keymap.set('n', '-', oil.toggle_float, {})
+    end,
+  },
+  {
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    ft = { 'markdown' },
+    build = function()
+      vim.fn['mkdp#util#install']()
+    end,
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = { 'LazyGit', 'LazyGitConfig', 'LazyGitCurrentFile', 'LazyGitFilter', 'LazyGitFilterCurrentFile' },
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    keys = {
+      { '<leader>lz', '<cmd>LazyGit<cr>', desc = 'Open lazygit' },
     },
   },
 
@@ -984,7 +1106,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -1010,6 +1132,15 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
+})
+
+-- vim.api.nvim_create_autocmd('BufEnter', {})
+
+vim.api.nvim_create_autocmd('BufEnter', {
+  pattern = '*',
+  callback = function()
+    vim.cmd 'lcd %:p:h'
+  end,
 })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
