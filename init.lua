@@ -1139,9 +1139,11 @@ require('lazy').setup({
 vim.api.nvim_create_autocmd('BufEnter', {
   pattern = '*',
   callback = function()
-    vim.cmd 'lcd %:p:h'
+    -- Only change directory if the buffer has a valid file
+    if vim.fn.bufname '%' ~= '' and vim.fn.filereadable(vim.fn.expand '%') == 1 then
+      vim.cmd 'lcd %:p:h'
+    end
   end,
 })
-
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
